@@ -180,6 +180,9 @@ ok_pc:
 # Interrupt-specific code goes here!
 # Don't skip instruction at EPC since it has not executed.
 interrupts:
+	# Ignoramos las interrupciones mientras manejamos la actual.
+	mtc0	$0, $12
+	
 	mfc0 	$a0, $13
 	srl	$a0, $a0, 15
 	andi	$a0, 1
@@ -194,10 +197,6 @@ interrupts:
 	
 	
 reciever_event:
-	# Ignoramos las interrupciones mientras manejamos la actual.
-	li 	$t0, 0x0011
-	mtc0	$t0, $12
-	
 	lw	$a0, reciever_data
 	lw	$a0, ($a0)
 	
@@ -223,25 +222,26 @@ reciever_event_top:
 	beq	$a1, 3, reciever_event_end
 	li	$a1, 2
 	sw	$a1, dir
-	b	reciever_event_end
+	
+	b	timer_event
 reciever_event_left:
 	lw	$a1, dir
 	beq	$a1, 0, reciever_event_end
 	li	$a1, 1
 	sw	$a1, dir
-	b	reciever_event_end
+	b	timer_event
 reciever_event_bot:
 	lw	$a1, dir
 	beq	$a1, 2, reciever_event_end
 	li	$a1, 3
 	sw	$a1, dir
-	b	reciever_event_end
+	b	timer_event
 reciever_event_right:
 	lw	$a1, dir
 	beq	$a1, 1, reciever_event_end
 	li	$a1, 0
 	sw	$a1, dir
-	b	reciever_event_end
+	b	timer_event
 	
 reciever_event_pause:
 	# Verificamos si estamos en pausa o no.
@@ -296,6 +296,15 @@ timer_event:
 	
 	# Si v1 == 2, siginifica que pasamos al siguiente nivel.
 	# Limpiamos la pantalla.
+	
+	lw	$s0, K
+timer_loop:
+	lw	$a0, queue 
+	la	$t9, dequeue
+   	jalr	$t9
+   	add	$s0, $s0, -1
+   	bnez	$s0, timer_loop
+	
 	lw	$a0, display
 	lw	$a1, N
 	lw	$a2, M
@@ -358,8 +367,8 @@ timer_event_end:
 
 event_gameover:
 	# Ignoramos las interrupciones del teclado y el timer.
-	li 	$t0, 0x1
-	mtc0	$t0, $12
+	mtc0	$0, $12
+	sw	$0, interrupts_code
 	
 	# Verificamos la hora actual del sistema y le restamos la hora inicial.
 	li	$v0, 30
@@ -413,9 +422,8 @@ ret_interrupts:
 
 	mtc0 $0 $13		# Clear Cause register
 
-	mfc0 $k0 $12		# Set Status register
-	ori  $k0 0x1		# Interrupts enabled
-	mtc0 $k0 $12
+	lw	$t0, interrupts_code
+	mtc0 	$t0 $12
 
 # Return from exception on MIPS32:
 	eret

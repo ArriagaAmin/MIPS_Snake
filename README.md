@@ -17,11 +17,13 @@ Primero debera ejecutar el simulador de MIPS, MARS. Para ello use el comando
 
 ```$ java -jar MarsTimer.jar ```
 
-Una vez dentro del simulador, debera abrir algun programa con una etiqueta **main** que dure lo sofuciente como para poder jugar. El repositorio trae un archivo de prueba **Play.s** el cual solo contiene un bucle infinito. Para abrir este archivo en MARS debe darle click a: *File* -> *Open* -> **Play.s** -> *Open*. 
+Una vez dentro del simulador, en la zona superior habra una barra que dice "*Run speed 20 inst/sec*" el cual indica la cantidad de instrucciones que MARS hara por segundo, deslize el indicador al maximo, hasta que diga "*Run speed at max (no interaction)*".
+
+Luego, debera abrir algun programa con una etiqueta **main** que dure lo suficiente como para poder jugar. El repositorio trae un archivo de prueba **Play.s** el cual solo contiene un bucle infinito. Para abrir este archivo en MARS debe darle click a: *File* -> *Open* -> **Play.s** -> *Open*. 
 
 Ahora, hay que asignar al manejador de excepciones que controla al juego. Para ello debe darle a: *Settings* -> *Exception handler* -> *Browse* -> **exception.s** -> *Open* -> *OK*.
 
-Luego, necesitamos el simulador del teclado y del monitor. Para el teclado debe darle a: *Tools* -> *Keyboard and Display MMIO Simulator* -> *Connect to MIPS*. En la ventana que aparecera habran dos cuadros blancos, el de abajo sera el que usaremos como teclado. Para el monitor debe darle a: *Tools* -> *Bitmap Display* -> *Connect to MIPS*. Debe asegurarse que los siguientes parametros tienen los valores:
+Despues, necesitamos el simulador del teclado y del monitor. Para el teclado debe darle a: *Tools* -> *Keyboard and Display MMIO Simulator* -> *Connect to MIPS*. En la ventana que aparecera habran dos cuadros blancos, el de abajo sera el que usaremos como teclado. Para el monitor debe darle a: *Tools* -> *Bitmap Display* -> *Connect to MIPS*. Debe asegurarse que los siguientes parametros tienen los valores:
 
 * *Unit Width in Pixels*: 8
 * *Unit Height in Pixels:* 8

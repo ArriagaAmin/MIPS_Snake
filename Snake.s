@@ -354,12 +354,12 @@ snake_move_check:
 	move	$t2, $v0
 	
 	# Si la casilla es roja, generamos una nueva manzana.
-	before_call (2, -1, -1)
+	before_call (3, -1, -1)
 	move	$a0, $a3
 	move	$a1, $t0
 	move	$a2, $t1
 	jal 	random_apple
-	after_call (2, -1, -1)
+	after_call (3, -1, -1)
 	
 	move	$v0, $t2
 	li	$t0, 1	# Indica que se comio una manzana
