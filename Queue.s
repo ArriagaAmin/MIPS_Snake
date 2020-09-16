@@ -7,7 +7,7 @@ queue_create:
 #
 # RETURNS:
 #	v0: Direccion de la cola.
-#	v1: Codigo e error.
+#	v1: Codigo de error.
 #
 # RESERVA DE MEMORIA:
 #	4: Tail
@@ -141,7 +141,14 @@ enqueue_end:
 	jr      $ra		
 	
 enqueue_error:
+	before_call(0, -1, -1)
 	print("Error insertando un elemento: Overflow.")
+	print("Direccion de la cola:")
+	after_call(0, -1, -1)
+	
+	li	$v0, 34
+	syscall
+	print("\n")
 	li	$v0, 1
 	after_run(-1, -1)
 	jr      $ra		
@@ -195,7 +202,14 @@ dequeue_end:
 	jr      $ra		
 	
 dequeue_error:	
+	before_call(0, -1, -1)
 	print("Error sacando un elemento: Underflow.")
+	print("Direccion de la cola:")
+	after_call(0, -1, -1)
+	
+	li	$v0, 34
+	syscall
+	print("\n")
 	li	$v0, 1
 	after_run(-1, -1)
 	jr      $ra		

@@ -25,44 +25,6 @@
 # Define the exception handling code.  This must go first!
 
 	.kdata
-__m1_:	.asciiz "  Exception "
-__m2_:	.asciiz " occurred and ignored\n"
-__e0_:	.asciiz "  [Interrupt] "
-__e1_:	.asciiz	"  [TLB]"
-__e2_:	.asciiz	"  [TLB]"
-__e3_:	.asciiz	"  [TLB]"
-__e4_:	.asciiz	"  [Address error in inst/data fetch] "
-__e5_:	.asciiz	"  [Address error in store] "
-__e6_:	.asciiz	"  [Bad instruction address] "
-__e7_:	.asciiz	"  [Bad data address] "
-__e8_:	.asciiz	"  [Error in syscall] "
-__e9_:	.asciiz	"  [Breakpoint] "
-__e10_:	.asciiz	"  [Reserved instruction] "
-__e11_:	.asciiz	""
-__e12_:	.asciiz	"  [Arithmetic overflow] "
-__e13_:	.asciiz	"  [Trap] "
-__e14_:	.asciiz	""
-__e15_:	.asciiz	"  [Floating point] "
-__e16_:	.asciiz	""
-__e17_:	.asciiz	""
-__e18_:	.asciiz	"  [Coproc 2]"
-__e19_:	.asciiz	""
-__e20_:	.asciiz	""
-__e21_:	.asciiz	""
-__e22_:	.asciiz	"  [MDMX]"
-__e23_:	.asciiz	"  [Watch]"
-__e24_:	.asciiz	"  [Machine check]"
-__e25_:	.asciiz	""
-__e26_:	.asciiz	""
-__e27_:	.asciiz	""
-__e28_:	.asciiz	""
-__e29_:	.asciiz	""
-__e30_:	.asciiz	"  [Cache]"
-__e31_:	.asciiz	""
-__excp:	.word __e0_, __e1_, __e2_, __e3_, __e4_, __e5_, __e6_, __e7_, __e8_, __e9_
-	.word __e10_, __e11_, __e12_, __e13_, __e14_, __e15_, __e16_, __e17_, __e18_,
-	.word __e19_, __e20_, __e21_, __e22_, __e23_, __e24_, __e25_, __e26_, __e27_,
-	.word __e28_, __e29_, __e30_, __e31_
 v0:	.word 0
 v1:	.word 0
 a0:	.word 0
@@ -86,9 +48,9 @@ reciever_control:	.word 0xffff0000
 # Parametro D. Se usa la direccion 0x10000000 pues 0x50000000 no lo acepta Bitmap.
 display:	.word 0x10000000
 N:	.word 32	# Numero de filas
-M:	.word 42	# Numero de columnas
-S:	.word 2		# Frames per second (FPS). Tambien es el parametro V (velocidad de la serpiente).
-K:	.word 5		# Numero de manzanas para pasar al siguiente nivel.
+M:	.word 50	# Numero de columnas
+S:	.word 3		# Frames per second (FPS). Tambien es el parametro V (velocidad de la serpiente).
+K:	.word 10		# Numero de manzanas para pasar al siguiente nivel.
 
 queue:	.word 0		# Direccion de la cola que representa el movimiento de la serpiente.
 head:	.word 0		# Direccion de la cabeza de la serpiente.
@@ -134,48 +96,6 @@ interrupts_code:	.word 0x8101
 	sw $t5 t5
 	sw $t6 t6
 	sw $t9 t9
-
-	mfc0 $k0 $13		# Cause register
-	srl $a0 $k0 2		# Extract ExcCode Field
-	andi $a0 $a0 0x1f
-
-	# Print information about exception.
-	#
-	li $v0 4		# syscall 4 (print_str)
-	la $a0 __m1_
-	syscall
-
-	li $v0 1		# syscall 1 (print_int)
-	srl $a0 $k0 2		# Extract ExcCode Field
-	andi $a0 $a0 0x1f
-	syscall
-
-	li $v0 4		# syscall 4 (print_str)
-	andi $a0 $k0 0x3c
-	lw $a0 __excp($a0)
-	nop
-	syscall
-
-	bne $k0 0x18 ok_pc	# Bad PC exception requires special checks
-	nop
-
-	mfc0 $a0 $14		# EPC
-	andi $a0 $a0 0x3	# Is EPC word-aligned?
-	beq $a0 0 ok_pc
-	nop
-
-	li $v0 10		# Exit on really bad PC
-	syscall
-
-ok_pc:
-	li $v0 4		# syscall 4 (print_str)
-	la $a0 __m2_
-	syscall
-
-	srl $a0 $k0 2		# Extract ExcCode Field
-	andi $a0 $a0 0x1f
-	bne $a0 0 ret		# 0 means exception was an interrupt
-	nop
 
 # Interrupt-specific code goes here!
 # Don't skip instruction at EPC since it has not executed.
@@ -287,6 +207,10 @@ timer_event:
 	# Movemos a la serpiente un pixel.
    	la	$t9, snake_move
    	jalr	$t9
+   	
+   	# Verificamos si hubo un error
+   	beqz	$v0, timer_event_end
+   	
    	sw	$v0, head
    	
    	# Verificamos el resultado del movimiento.
@@ -363,6 +287,9 @@ timer_event_apple:
 	sw	$a0, apples
 	
 timer_event_end:
+	lw	$t0, interrupts_code
+	mtc0 	$t0 $12
+	
 	j 	ret_interrupts
 
 event_gameover:
@@ -422,8 +349,6 @@ ret_interrupts:
 
 	mtc0 $0 $13		# Clear Cause register
 
-	lw	$t0, interrupts_code
-	mtc0 	$t0 $12
 
 # Return from exception on MIPS32:
 	eret

@@ -260,10 +260,10 @@ snake:
 # PARAMETROS:
 #	a0: Longitud
 #	a1: Display
-#	a2: Numero de manzanas para pasar al siguiente nivel
+#	a2: Numero de manzanas para pasar al siguiente nivel (0 para error)
 #
 # RETURNS:
-#	v0: Direccion de la cola que representa a la serpiente
+#	v0: Direccion de la cola (queue) que representa a la serpiente
 #	v1: Cabeza de la serpiente.
 
 	# Posicion inicial de la serpiente, significa que comienza en ($t0, $t0) hacia la derecha.
@@ -276,6 +276,7 @@ snake:
 	add	$a0, $a0, $a2
 	jal	queue_create
 	after_call (2, -1, 1)
+	bnez	$v1, snake_error1
 	
 	li	$t2, 0	# Iterador
 
@@ -298,16 +299,28 @@ snake_draw:
 	move	$a0, $v0
 	move	$a1, $t3
 	jal	enqueue
+	move	$v1, $v0
 	after_call (3, 0, 5)
+	bnez	$v1, snake_error2
 	
 	move	$v1, $t3
 
 	addi 	$t2, $t2, 1
-	b	snake_draw
+	b	snake_draw	
+	
+snake_error1:
+	print("Hubo un error creando la cola (queue) que representa a la serpiente.")
+	b	snake_error
+snake_error2:
+	print("Hubo un error insertando un elemento en la cola (queue) que representa a la serpiente")
+snake_error:
+	li	$v0, 0
+	li	$v1, 0
 	
 snake_end:
 	after_run (1, -1)
 	jr	$ra
+	
 
 
 # Mueve a la serpiente
@@ -321,7 +334,7 @@ snake_move:
 #	t1: Numero de columnas.
 #
 # RETURNS:
-#	v0: Nueva cabeza de la serpiente.
+#	v0: Nueva cabeza de la serpiente. (0 para error)
 #	v1: 0 -> Nada; 1 -> Se comio una manzana pero no gano; 2 -> Paso al siguiente nivel; 3 -> Perdio.
    	before_run (1, -1)
    	
@@ -354,12 +367,12 @@ snake_move_check:
 	move	$t2, $v0
 	
 	# Si la casilla es roja, generamos una nueva manzana.
-	before_call (3, -1, -1)
+	before_call (3, 0, -1)
 	move	$a0, $a3
 	move	$a1, $t0
 	move	$a2, $t1
 	jal 	random_apple
-	after_call (3, -1, -1)
+	after_call (3, 0, -1)
 	
 	move	$v0, $t2
 	li	$t0, 1	# Indica que se comio una manzana
@@ -402,7 +415,9 @@ snake_move_draw:
 	move	$a0, $a1
 	move	$a1, $v0
 	jal	enqueue
+	move	$t1, $v0
 	after_call (1, 0, 0)
+	bnez	$t1, snake_move_error1
 	
 	bne	$t0, 1, snake_move_del
 	
@@ -429,7 +444,17 @@ snake_move_del:
 
 snake_move_gameover:
 	li	$v1, 3
-		
+	b	snake_move_end
+	
+snake_move_error1:
+	print("Hubo un error insertando un elemento en la cola (queue) que representa a la serpiente.")	
+	b	snake_move_error
+snake_move_error2:
+	print("Hubo un error sacando un elemento de la cola (queue) que representa a la serpiente.")
+snake_move_error:
+	li	$v0, 0
+	li	$v1, 0
+	
 snake_move_end:
 	after_run(1, -1)
 	jr	$ra
