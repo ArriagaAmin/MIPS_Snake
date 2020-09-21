@@ -79,6 +79,9 @@ El enunciado especifico del proyecto se encuentra [aquí](https://github.com/Arr
 * **exception.s**: Contiene las interrupciones que permiten ejecutar las instrucciones del juego.
 * **macros.s**: Contiene las macros que se usan en todos los archivos de MIPS.
 
+### Errores
+* A veces, en un nivel superior al 1 y al comer una manzana que no sea la primera, ocurre un error y se agrega un elemento (posicion en memoria) a una cola que representa la serpiente de algun nivel anterior, lo que produce un overflow en la cola, pues todas las serpientes de niveles anteriores tenian la cola llena (sino no pasaban de nivel), y este overflow, de alguna forma, produce un error en la informacion que se guarda en el registro $ra, lo cual hace finalizar el programa. No se logro resolver este error.
+
 ### Autores
 * *Amin Arriaga*.
 * *Angel Garces*.

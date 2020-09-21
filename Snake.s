@@ -505,7 +505,7 @@ random_apple:
 	move	$t1, $a1
 	li	$v0, 30
 	syscall
-	rem	$t0, $a0, $t1
+	remu	$t0, $a0, $t1
 	after_call (2, -1, -1)
 	
 	bnez	$t0, random_apple_col
@@ -517,7 +517,7 @@ random_apple_col:
 	move	$t0, $a2
 	li	$v0, 30
 	syscall
-	rem	$t1, $a0, $t0
+	remu	$t1, $a0, $t0
 	after_call (2, -1, 0)
 	
 	bnez	$t1, random_apple_draw
